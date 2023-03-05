@@ -2,6 +2,7 @@
 set -e
 rm -rf krakend/krakend.json
 if [ -f "./.env" ]; then
+    echo "Set environment from .env file"
     source ./.env
 fi
 sed "s/_GOOGLE_CLOUD_PROJECT/${PROJECT_ID}/g" krakend/krakend.tpl.json | \
@@ -11,3 +12,4 @@ sed "s|_AUTH_JWK_URL|${_AUTH_JWK_URL}|g" | \
 sed "s|_AUTH_AUDIENCE|${_AUTH_AUDIENCE}|g" | \
 sed "s|_AUTH_SSO_AUDIENCE|${_AUTH_SSO_AUDIENCE}|g" | \
 sed "s/_PROJECT_REGION/$$PROJECT_REGION/g" > krakend/krakend.json
+echo "generated"
