@@ -1,0 +1,247 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "name": "Finance Assistent",
+  "extra_config": {
+    "telemetry/logging": {
+      "level": "ERROR",
+      "prefix": "[KRAKEND]",
+      "syslog": false,
+      "stdout": true,
+      "format": "default",
+      "syslog_facility": "local3"
+    },
+    "telemetry/metrics": {
+      "collection_time": "60s",
+      "proxy_disabled": false,
+      "router_disabled": false,
+      "backend_disabled": false,
+      "endpoint_disabled": false,
+      "listen_address": ":8090"
+    },
+    "plugin/http-server": {
+      "name": [
+        "static-filesystem"
+      ],
+      "static-filesystem": {
+        "prefix": "/media/assets",
+        "path": "/var/www/static"
+      }
+    },
+    "auth/api-keys": {
+      "keys": []
+    },
+    "security/cors": {
+      "allow_origins": [
+        "*"
+      ],
+      "expose_headers": [
+        "Content-Length"
+      ],
+      "max_age": "12h",
+      "allow_methods": [
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS",
+        "PATCH"
+      ]
+    }
+  },
+  "timeout": "15000ms",
+  "cache_ttl": "300s",
+  "output_encoding": "json",
+  "plugin": {
+    "pattern": ".so",
+    "folder": "/opt/krakend/plugins/"
+  },
+  "endpoints": [
+    {
+      "endpoint": "/iron-bank/v1/transactions",
+      "method": "GET",
+      "input_headers": [ "x-token-type", "x-account-active", "x-account-id" ],
+      "output_encoding": "json",
+      "backend": [
+        {
+          "url_pattern": "/transactions/",
+          "encoding": "json",
+          "sd": "static",
+          "method": "GET",
+          "host": [
+            "_IRON_BANK_HOST_URL"
+          ],
+          "disable_host_sanitize": false,
+          "is_collection": true,
+          "target": ""
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": ["_AUTH_AUDIENCE"],
+          "jwk_url": "_AUTH_JWK_URL",
+          "propagate_claims": [
+            [ "gty", "x-token-type" ],
+            [ "https://buddycash.app/account_id", "x-account-id" ],
+            [ "https://buddycash.app/active", "x-account-active" ]
+          ]
+        },
+        "proxy": {
+          "sequential": false
+        }
+      },
+      "input_query_strings": []
+    },
+    {
+      "endpoint": "/iron-bank/v1/transactions/{id}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": [ "x-token-type", "x-account-active", "x-account-id" ],
+      "backend": [
+        {
+          "url_pattern": "/transactions/{id}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "DELETE",
+          "host": [
+            "_IRON_BANK_HOST_URL"
+          ],
+          "disable_host_sanitize": false
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": ["_AUTH_AUDIENCE"],
+          "jwk_url": "_AUTH_JWK_URL",
+          "propagate_claims": [
+            [ "gty", "x-token-type" ],
+            [ "https://buddycash.app/account_id", "x-account-id" ],
+            [ "https://buddycash.app/active", "x-account-active" ]
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/iron-bank/v1/transactions",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [ "x-token-type", "x-account-active", "x-account-id" ],
+      "backend": [
+        {
+          "url_pattern": "/transactions/",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "host": [
+            "_IRON_BANK_HOST_URL"
+          ],
+          "disable_host_sanitize": false
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": ["_AUTH_AUDIENCE"],
+          "jwk_url": "_AUTH_JWK_URL",
+          "propagate_claims": [
+            [ "gty", "x-token-type" ],
+            [ "https://buddycash.app/account_id", "x-account-id" ],
+            [ "https://buddycash.app/active", "x-account-active" ]
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/wall/v1/accounts/{email}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": [ "x-token-type", "x-account-active", "x-account-id" ],
+      "backend": [
+        {
+          "url_pattern": "/wall-register/{email}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "GET",
+          "disable_host_sanitize": false,
+          "host": [
+            "_WALL_REGISTER_HOST_URL"
+          ]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": ["_AUTH_SSO_AUDIENCE"],
+          "jwk_url": "_AUTH_JWK_URL",
+          "propagate_claims": [
+            [ "gty", "x-token-type" ],
+            [ "https://buddycash.app/account_id", "x-account-id" ],
+            [ "https://buddycash.app/active", "x-account-active" ]
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/wall/v1/accounts",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "backend": [
+        {
+          "url_pattern": "/wall-register",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "POST",
+          "disable_host_sanitize": false,
+          "host": [
+            "_WALL_REGISTER_HOST_URL"
+          ]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": ["_AUTH_SSO_AUDIENCE"],
+          "jwk_url": "_AUTH_JWK_URL",
+          "propagate_claims": [
+            [ "gty", "x-token-type" ],
+            [ "https://buddycash.app/account_id", "x-account-id" ],
+            [ "https://buddycash.app/active", "x-account-active" ]
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/wall/v1/accounts/{email}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": [ "x-token-type", "x-account-active", "x-account-id" ],
+      "backend": [
+        {
+          "url_pattern": "/wall-register/{email}",
+          "encoding": "no-op",
+          "sd": "static",
+          "method": "DELETE",
+          "host": [
+            "_WALL_REGISTER_HOST_URL"
+          ],
+          "disable_host_sanitize": false
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "RS256",
+          "audience": ["_AUTH_SSO_AUDIENCE"],
+          "jwk_url": "_AUTH_JWK_URL",
+          "propagate_claims": [
+            [ "gty", "x-token-type" ],
+            [ "https://buddycash.app/account_id", "x-account-id" ],
+            [ "https://buddycash.app/active", "x-account-active" ]
+          ]
+        }
+      }
+    }
+  ]
+}
