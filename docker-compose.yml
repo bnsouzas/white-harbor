@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  gateway:
+    image: white-harbor
+    build:
+      context: ./
+    volumes:
+      - ./krakend:/etc/krakend/
+    ports:
+      - 8080:8080
